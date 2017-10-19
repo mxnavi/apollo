@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>apollo</artifactId>
 		<groupId>com.ctrip.framework.apollo</groupId>
-		<version>0.7.0</version>
+		<version>0.9.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>apollo-demo</artifactId>
@@ -85,6 +85,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+        <!-- for refresh scope demo -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-context</artifactId>
 		</dependency>
         <!-- required for spring 3.1.0 -->
 		<dependency>

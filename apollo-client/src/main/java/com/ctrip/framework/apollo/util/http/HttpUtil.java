@@ -1,21 +1,18 @@
 package com.ctrip.framework.apollo.util.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import com.ctrip.framework.apollo.build.ApolloInjector;
 import com.ctrip.framework.apollo.exceptions.ApolloConfigException;
 import com.ctrip.framework.apollo.exceptions.ApolloConfigStatusCodeException;
 import com.ctrip.framework.apollo.util.ConfigUtil;
 import com.google.common.base.Function;
-import com.google.common.io.BaseEncoding;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -23,7 +20,6 @@ import com.google.gson.Gson;
 public class HttpUtil {
   private ConfigUtil m_configUtil;
   private Gson gson;
-  private String basicAuth;
 
   /**
    * Constructor.
@@ -31,11 +27,6 @@ public class HttpUtil {
   public HttpUtil() {
     m_configUtil = ApolloInjector.getInstance(ConfigUtil.class);
     gson = new Gson();
-    try {
-      basicAuth = "Basic " + BaseEncoding.base64().encode("user:".getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException ex) {
-      ex.printStackTrace();
-    }
   }
 
   /**
@@ -84,7 +75,6 @@ public class HttpUtil {
       HttpURLConnection conn = (HttpURLConnection) new URL(httpRequest.getUrl()).openConnection();
 
       conn.setRequestMethod("GET");
-      conn.setRequestProperty("Authorization", basicAuth);
 
       int connectTimeout = httpRequest.getConnectTimeout();
       if (connectTimeout < 0) {
@@ -104,7 +94,7 @@ public class HttpUtil {
       statusCode = conn.getResponseCode();
 
       if (statusCode == 200) {
-        isr = new InputStreamReader(conn.getInputStream());
+        isr = new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8);
         String content = CharStreams.toString(isr);
         return new HttpResponse<>(statusCode, serializeFunction.apply(content));
       }

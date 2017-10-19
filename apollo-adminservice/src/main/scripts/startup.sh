@@ -6,7 +6,7 @@ LOG_DIR=/opt/logs/100003172
 SERVER_PORT=8090
 
 ## Adjust memory settings if necessary
-#export JAVA_OPTS="-Xms2560m -Xmx2560m -Xss256k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:NewSize=1024m -XX:MaxNewSize=1024m -XX:SurvivorRatio=22"
+#export JAVA_OPTS="-Xms2560m -Xmx2560m -Xss256k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:NewSize=1536m -XX:MaxNewSize=1536m -XX:SurvivorRatio=8"
 
 ## Only uncomment the following when you are using server jvm
 #export JAVA_OPTS="$JAVA_OPTS -server -XX:-ReduceInitialCardMarks"
@@ -17,6 +17,24 @@ export JAVA_OPTS="$JAVA_OPTS -Dserver.port=$SERVER_PORT -Dlogging.file=$LOG_DIR/
 
 PATH_TO_JAR=$SERVICE_NAME".jar"
 SERVER_URL="http://localhost:$SERVER_PORT"
+
+function checkPidAlive {
+    for i in `ls -t $SERVICE_NAME*.pid 2>/dev/null`
+    do
+        read pid < $i
+
+        result=$(ps -p "$pid")
+        if [ "$?" -eq 0 ]; then
+            return 0
+        else
+            printf "\npid - $pid just quit unexpectedly, please check logs under $LOG_DIR and /tmp for more information!\n"
+            exit 1;
+        fi
+    done
+
+    printf "\nNo pid file found, startup may failed. Please check logs under $LOG_DIR and /tmp for more information!\n"
+    exit 1;
+}
 
 if [ "$(uname)" == "Darwin" ]; then
     windows="0"
@@ -77,7 +95,7 @@ then
 fi
 
 declare -i counter=0
-declare -i max_counter=16 # 16*5=80s
+declare -i max_counter=48 # 48*5=240s
 declare -i total_time=0
 
 printf "Waiting for server startup"
@@ -86,6 +104,8 @@ do
     printf "."
     counter+=1
     sleep 5
+
+    checkPidAlive
 done
 
 total_time=counter*5
